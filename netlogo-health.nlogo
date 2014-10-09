@@ -22,6 +22,22 @@ end
 to go
   
 end
+
+to setup-people
+  create-people population [
+  set shape "person"
+  setxy random-xcor random-ycor
+  set resources median (list 0 (random-normal 50 20) 100)
+  set health-desire median (list 0 (random-normal mean-health-desire SD-health-desire) 100)
+  set status-desire median (list 0 (random-normal mean-status-desire SD-status-desire) 100)
+  ]
+end
+
+to setup-patches
+  ask patches [
+    set health pycor
+  ]
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
 210
@@ -83,6 +99,81 @@ NIL
 NIL
 NIL
 0
+
+SLIDER
+20
+63
+192
+96
+population
+population
+0
+100
+50
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+20
+104
+202
+137
+mean-health-desire
+mean-health-desire
+0
+100
+50
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+20
+148
+192
+181
+SD-health-desire
+SD-health-desire
+0
+100
+10
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+20
+192
+201
+225
+mean-status-desire
+mean-status-desire
+0
+100
+75
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+20
+235
+192
+268
+SD-status-desire
+SD-status-desire
+0
+100
+15
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
