@@ -3,13 +3,18 @@ breed [people person]
 people-own
 [
   resources     ;; SES
+  health        ;; health status
   health-desire ;; how much they care about health
   status-desire ;; how much they care about status
+  buy-price     ;; how much they are willing to pay for a new patch
+  sell-price    ;; how much they are willing to accept for their patch
+  happy?        ;; are they happy with their patch
 ]
 
 patches-own
 [
-  health        ;; how healthful it is to live there
+  healthfulness ;; how healthful it is to live there
+  status        ;; mean resources of owner and neighbours
 ]
 
 to setup
@@ -20,7 +25,9 @@ to setup
 end
 
 to go
-  
+  move-unhappy-people
+  update-people
+  update-patches
 end
 
 to setup-people
@@ -28,16 +35,40 @@ to setup-people
   set shape "person"
   setxy random-xcor random-ycor
   set resources median (list 0 (random-normal 50 20) 100)
+  set health median (list 0 (random-normal 50 20) 100)
   set health-desire median (list 0 (random-normal mean-health-desire SD-health-desire) 100)
   set status-desire median (list 0 (random-normal mean-status-desire SD-status-desire) 100)
+  update-happiness
   ]
 end
 
 to setup-patches
   ask patches [
-    set health pycor
+    set healthfulness pycor
   ]
 end
+
+to update-happiness
+  
+
+to move-unhappy-people
+  ask people with [ not happy? ]
+    [ find-new-patch ]
+end
+
+to find-new-patch
+  
+end
+
+to update-people
+  
+end
+
+to update-patches
+  
+end
+
+    
 @#$#@#$#@
 GRAPHICS-WINDOW
 210
