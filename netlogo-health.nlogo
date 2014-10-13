@@ -9,6 +9,8 @@ people-own
   buy-price     ;; how much they are willing to pay for a new patch
   sell-price    ;; how much they are willing to accept for their patch
   happy?        ;; are they happy with their patch
+  hpercentile   ;; percentile for health (higher is better)
+  spercentile   ;; percentil of patch for status (higher is better)
 ]
 
 patches-own
@@ -21,6 +23,7 @@ to setup
   clear-all
   setup-people
   setup-patches
+  update-people
   reset-ticks
 end
 
@@ -46,10 +49,50 @@ to setup-patches
   ask patches [
     set healthfulness pycor
   ]
+  update-status
 end
 
+to update-status
+  ask patches [
+    let inhabitants (turtle-set turtles-here turtles-on neighbors)
+    if count inhabitants > 0 [
+      set status mean [resources] of inhabitants
+    ]
+  ]
+end
+
+to-report listpos [my-list my-item]
+  let indices n-values length my-list [?]
+  foreach indices [
+    if item ? my-list = my-item
+      [ report ? ]
+  ]
+end
+
+to update-rank
+  let healthsort sort-on [health] people
+  let statussort sort-on [status] patches
+  ask people [
+    let hrank listpos healthsort self
+    let srank listpos statussort patch-here
+    set hpercentile hrank / count people * 100
+    set spercentile srank / count patches * 100
+  ]
+end    
+
+to update-health
+  ask people [
+    set health health + [healthfulness] of patch-here / 16
+  ]
+end  
+
 to update-happiness
-  
+  ask people [
+    ifelse hpercentile >= health-desire and spercentile >= status-desire
+      [ set happy? True ]
+      [ set happy? False ]
+  ]
+end
 
 to move-unhappy-people
   ask people with [ not happy? ]
@@ -57,15 +100,29 @@ to move-unhappy-people
 end
 
 to find-new-patch
-  
+  ask people [
+    let bestscore 0
+    let bestpatch []
+    let hweight health-desire / (health-desire + status-desire)
+    let sweight status-desire / (health-desire + status-desire)
+    ask neighbors [
+      let thisscore hweight * healthfulness + sweight * status 
+      if thisscore >= bestscore [
+        set bestpatch sentence bestpatch self 
+        set bestscore thisscore]
+    ]
+    move-to one-of bestpatch
+    ]
 end
 
 to update-people
-  
+  update-rank
+  update-health
+  update-happiness
 end
 
 to update-patches
-  
+  update-status
 end
 
     
@@ -140,7 +197,7 @@ population
 population
 0
 100
-50
+100
 1
 1
 NIL
