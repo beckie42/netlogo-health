@@ -10,13 +10,16 @@ people-own
   sell-price    ;; how much they are willing to accept for their patch
   happy?        ;; are they happy with their patch
   hpercentile   ;; percentile for health (higher is better)
-  spercentile   ;; percentil of patch for status (higher is better)
+  spercentile   ;; percentile of patch for status (higher is better)
+  income        ;; earn 10% of resources per turn
 ]
 
 patches-own
 [
   healthfulness ;; how healthful it is to live there
   status        ;; mean resources of owner and neighbours
+  phpercentile  ;; percentile for health (higher is better)
+  pspercentile  ;; percentile of patch for status (higher is better)
 ]
 
 to setup
@@ -28,9 +31,22 @@ to setup
 end
 
 to go
+  update-resources
   move-unhappy-people
   update-people
   update-patches
+end
+
+to update-people
+  update-rank
+  update-health
+  update-happiness
+  update-resources
+end
+
+to update-patches
+  update-status
+  update-patchrank
 end
 
 to setup-people
@@ -38,6 +54,7 @@ to setup-people
   set shape "person"
   setxy random-xcor random-ycor
   set resources median (list 0 (random-normal 50 20) 100)
+  set income 0
   set health median (list 0 (random-normal 50 20) 100)
   set health-desire median (list 0 (random-normal mean-health-desire SD-health-desire) 100)
   set status-desire median (list 0 (random-normal mean-status-desire SD-status-desire) 100)
@@ -47,7 +64,7 @@ end
 
 to setup-patches
   ask patches [
-    set healthfulness pycor
+    set healthfulness pycor + 16
   ]
   update-status
 end
@@ -55,10 +72,10 @@ end
 to update-status
   ask patches [
     let inhabitants (turtle-set turtles-here turtles-on neighbors)
-    if count inhabitants > 0 [
-      set status mean [resources] of inhabitants
+    ifelse count inhabitants > 0 
+      [ set status mean [resources] of inhabitants ]
+      [ set status 50 ]
     ]
-  ]
 end
 
 to-report listpos [my-list my-item]
@@ -79,6 +96,17 @@ to update-rank
     set spercentile srank / count patches * 100
   ]
 end    
+
+to update-patchrank
+  let hsort sort-on [healthfulness] patches
+  let ssort sort-on [status] patches
+  ask patches [
+    let hrank listpos hsort self
+    let srank listpos ssort self
+    set phpercentile hrank / count patches * 100
+    set pspercentile srank / count patches * 100
+  ]
+end
 
 to update-health
   ask people [
@@ -115,16 +143,12 @@ to find-new-patch
     ]
 end
 
-to update-people
-  update-rank
-  update-health
-  update-happiness
-end
 
-to update-patches
-  update-status
+to update-resources
+  ask people [
+    set income resources * .1
+  ]
 end
-
     
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -142,7 +166,7 @@ GRAPHICS-WINDOW
 1
 0
 1
-1
+0
 1
 -16
 16
