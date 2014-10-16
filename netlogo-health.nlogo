@@ -6,8 +6,6 @@ people-own
   health        ;; health status
   health-desire ;; how much they care about health
   status-desire ;; how much they care about status
-  buy-price     ;; how much they are willing to pay for a new patch
-  sell-price    ;; how much they are willing to accept for their patch
   happy?        ;; are they happy with their patch
   hpercentile   ;; percentile for health (higher is better)
   spercentile   ;; percentile of patch for status (higher is better)
@@ -27,6 +25,7 @@ to setup
   setup-people
   setup-patches
   update-people
+  update-patches
   reset-ticks
 end
 
@@ -50,15 +49,16 @@ to update-patches
 end
 
 to setup-people
-  create-people population [
-  set shape "person"
-  setxy random-xcor random-ycor
-  set resources median (list 0 (random-normal 50 20) 100)
-  set money 0
-  set health median (list 0 (random-normal 50 20) 100)
-  set health-desire median (list 0 (random-normal mean-health-desire SD-health-desire) 100)
-  set status-desire median (list 0 (random-normal mean-status-desire SD-status-desire) 100)
-  update-happiness
+  ask n-of population patches [sprout-people 1 
+    [
+      set shape "person"
+      set resources median (list 0 (random-normal 50 20) 100)
+      set money 0
+      set health median (list 0 (random-normal 50 20) 100)
+      set health-desire median (list 0 (random-normal mean-health-desire SD-health-desire) 100)
+      set status-desire median (list 0 (random-normal mean-status-desire SD-status-desire) 100)
+      update-happiness
+    ]
   ]
 end
 
@@ -139,10 +139,51 @@ to find-new-patch
         set bestpatch sentence bestpatch self 
         set bestscore thisscore]
     ]
-    move-to one-of bestpatch
+    let vacant []
+    foreach bestpatch [
+      if count turtles-here = 0 [
+        set vacant sentence vacant ?
+      ]
+    ifelse length vacant != 0 
+      [ move-to one-of vacant ]
+      [ foreach bestpatch [
+          let seller turtles-on ?
+          let buyerspatch patch-here
+          let buy buy-price self ?
+          if buy <= money [
+            let sell sell-price seller ?
+            if buy >= sell [
+              move-to ?
+              set money money - buy
+              ask seller [
+                move-to buyerspatch
+                set money money + buy
+              ]
+            ]
+          ]
+        ]
+      ]
     ]
+  ]
 end
 
+to-report match [thisperson thispatch]
+  let patchscore [phpercentile] of thispatch + [pspercentile] of thispatch
+  report patchscore / ([health-desire] of thisperson + [status-desire] of thisperson)
+end
+
+to-report buy-price [thisperson thispatch]
+  report (match thisperson thispatch * resources)
+end
+
+to-report sell-price [thisperson thispatch]
+  let current-patch [patch-here] of thisperson
+  let current-match match thisperson current-patch
+  let alt-match match thisperson thispatch
+  ifelse current-match > alt-match
+    [ report (2 * current-match - alt-match) * resources ]
+    [ report buy-price thisperson current-patch ]
+end
 
 to update-resources
   ask people [
@@ -154,10 +195,10 @@ end
 GRAPHICS-WINDOW
 210
 10
-649
-470
-16
-16
+455
+184
+5
+5
 13.0
 1
 10
@@ -168,10 +209,10 @@ GRAPHICS-WINDOW
 1
 0
 1
--16
-16
--16
-16
+-5
+5
+-5
+5
 0
 0
 1
