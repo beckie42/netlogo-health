@@ -11,7 +11,7 @@ people-own
   happy?        ;; are they happy with their patch
   hpercentile   ;; percentile for health (higher is better)
   spercentile   ;; percentile of patch for status (higher is better)
-  income        ;; earn 10% of resources per turn
+  money         ;; earn 10% of resources per turn
 ]
 
 patches-own
@@ -54,7 +54,7 @@ to setup-people
   set shape "person"
   setxy random-xcor random-ycor
   set resources median (list 0 (random-normal 50 20) 100)
-  set income 0
+  set money 0
   set health median (list 0 (random-normal 50 20) 100)
   set health-desire median (list 0 (random-normal mean-health-desire SD-health-desire) 100)
   set status-desire median (list 0 (random-normal mean-status-desire SD-status-desire) 100)
@@ -146,7 +146,7 @@ end
 
 to update-resources
   ask people [
-    set income resources * .1
+    set money money + resources * .1
   ]
 end
     
