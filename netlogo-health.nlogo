@@ -141,16 +141,27 @@ to find-new-patch
     ]
     let vacant []
     foreach bestpatch [
-      if count turtles-here = 0 [
+      if any? turtles-here [
         set vacant sentence vacant ?
       ]
     ifelse length vacant != 0 
-      [ move-to one-of vacant ]
+      [ let newpatch one-of vacant
+        let buy buy-price self newpatch
+          if buy <= money [
+            type ticks type "buy" type buy show money
+            set money money - buy
+            type "bought" show money
+            move-to newpatch
+          ]
+        ]
       [ foreach bestpatch [
-          let seller turtles-on ?
+          let seller one-of turtles-on ?
+          type ticks type "seller" show seller
           let buyerspatch patch-here
+          print "calc buy price"
           let buy buy-price self ?
           if buy <= money [
+            print "calc sell price"
             let sell sell-price seller ?
             if buy >= sell [
               move-to ?
@@ -168,6 +179,7 @@ to find-new-patch
 end
 
 to-report match [thisperson thispatch]
+  ;; show thisperson show thispatch
   let patchscore [phpercentile] of thispatch + [pspercentile] of thispatch
   report patchscore / ([health-desire] of thisperson + [status-desire] of thisperson)
 end
@@ -187,19 +199,20 @@ end
 
 to update-resources
   ask people [
-    set money money + resources * .1
+    set money money + resources * .05
+    print "income"
   ]
 end
     
 @#$#@#$#@
 GRAPHICS-WINDOW
-210
+235
 10
-455
-184
+496
+292
 5
 5
-13.0
+22.82
 1
 10
 1
@@ -255,14 +268,14 @@ NIL
 
 SLIDER
 20
-63
+64
 192
-96
+97
 population
 population
 0
-100
-100
+200
+121
 1
 1
 NIL
